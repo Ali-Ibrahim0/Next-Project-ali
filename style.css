@@ -1,0 +1,90 @@
+body {
+            background: #f0edcc;
+            color: #111827;
+            font-family: 'Inter', sans-serif;
+        }
+        .dark body {
+            background: linear-gradient(to bottom, #064e3b, #022c22);
+            color: #f3f4f6;
+        }
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: #02343f;
+            color: #e5e7eb;
+            padding: 3rem 1.5rem;
+            transform: translateX(0) scale(1); /* Visible by default */
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), scale 0.4s ease;
+            z-index: 20;
+            box-shadow: 6px 0 16px rgba(0,0,0,0.3);
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+            overflow-y: auto;
+        }
+        #sidebar button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1.2rem;
+            color: white;
+            padding: 1.2rem 1.5rem;
+            border-radius: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #sidebar button:hover {
+            transform: scale(1.13);
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+        }
+        #home-btn {
+            background: linear-gradient(to right, #34d399, #059669);
+        }
+        #dashboard-btn {
+            background: #059669;
+        }
+        #reports-btn {
+            background: #047857;
+        }
+        #toggle-sidebar {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: #02343f;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            z-index: 30;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        #toggle-sidebar:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: #011f27;
+        }
+        .btn-primary {
+            background: #059669;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #10b981;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
