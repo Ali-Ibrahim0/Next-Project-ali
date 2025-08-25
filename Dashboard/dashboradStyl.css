@@ -1,0 +1,49 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fc;
+}
+
+.sidebar {
+    height: 100vh;
+    border-left: 1px solid #e3e6f0;
+}
+
+.nav-link {
+    color: #333;
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    color: #007bff;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.border-left-primary {
+    border-right: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-right: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-right: 0.25rem solid #f6c23e !important;
+}
+
+.border-left-danger {
+    border-right: 0.25rem solid #e74a3b !important;
+}
+
+.text-primary { color: #4e73df; }
+.text-success { color: #1cc88a; }
+.text-warning { color: #f6c23e; }
+.text-danger { color: #e74a3b; }
+
+/* للجدول */
+.table th, .table td {
+    text-align: center;
+}
