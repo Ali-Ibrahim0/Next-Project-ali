@@ -1,54 +1,174 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // بيانات وهمية للجدول
-    const attendanceData = [
-        { employee: 'أحمد محمد', date: '2025-08-25', time: '09:00 AM', location: 'القاهرة، مصر (30.0444, 31.2357)', status: 'حاضر' },
-        { employee: 'فاطمة علي', date: '2025-08-25', time: '09:15 AM', location: 'الإسكندرية، مصر (31.2001, 29.9187)', status: 'حاضر' },
-        { employee: 'محمد حسن', date: '2025-08-25', time: '10:00 AM', location: 'الجيزة، مصر (30.0131, 31.2089)', status: 'متأخر' },
-        // أضف المزيد إذا لزم
-    ];
 
-    // ملء الجدول
-    const tableBody = document.querySelector('#attendanceTable tbody');
-    attendanceData.forEach(record => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${record.employee}</td>
-            <td>${record.date}</td>
-            <td>${record.time}</td>
-            <td>${record.location}</td>
-            <td>${record.status}</td>
-        `;
-        tableBody.appendChild(row);
-    });
+        // --- Data Storage ---
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
+        let checkedInEmployee = null;
 
-    // إعداد الخريطة باستخدام Leaflet
-    const map = L.map('map').setView([30.0444, 31.2357], 13); // مركز على القاهرة افتراضيًا
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // إضافة علامات لمواقع وهمية
-    L.marker([30.0444, 31.2357]).addTo(map).bindPopup('موقع أحمد: القاهرة');
-    L.marker([31.2001, 29.9187]).addTo(map).bindPopup('موقع فاطمة: الإسكندرية');
-
-    // زر Check-In: استخدام GeoLocation API لتحديد الموقع
-    document.getElementById('checkInBtn').addEventListener('click', function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                alert(`تم تسجيل حضورك في الموقع: (${lat}, ${lon})`);
-                // هنا هترسل البيانات للـ backend عبر fetch API
-                // مثال: fetch('/api/checkin', { method: 'POST', body: JSON.stringify({ lat, lon }) });
-                
-                // تحديث الخريطة
-                L.marker([lat, lon]).addTo(map).bindPopup('موقعك الحالي').openPopup();
-                map.setView([lat, lon], 13);
-            }, error => {
-                alert('خطأ في تحديد الموقع: ' + error.message);
-            });
-        } else {
-            alert('المتصفح لا يدعم تحديد الموقع.');
+        // --- Utility Functions ---
+        function formatTime(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         }
-    });
-});
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString();
+        }
+        function getStatus(checkInDate) {
+            const d = new Date(checkInDate);
+            const hour = d.getHours();
+            // const min = d.getMinutes();
+            if (hour <= 20) return 'Present';
+            if (hour > 8 && hour <= 9) return 'Present';
+            if (hour > 9 && hour <= 10) return 'Late';
+            return 'Absent';
+        }
+        function getStatusClass(status) {
+            if (status === 'Present') return 'status-present';
+            if (status === 'Late') return 'status-late';
+            return 'status-absent';
+        }
+        function calcWorkHours(inTime, outTime) {
+            if (!inTime || !outTime) return '';
+            const diffMs = new Date(outTime) - new Date(inTime);
+            if (diffMs < 0) return '';
+            const hours = Math.floor(diffMs / 3600000);
+            const mins = Math.floor((diffMs % 3600000) / 60000);
+            return `${hours}h ${mins}m`;
+        }
+        function getLocation(callback) {
+            if (!navigator.geolocation) {
+                callback('Not Supported');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    callback(`Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`);
+                },
+                () => callback('Unavailable'),
+                { enableHighAccuracy: true, timeout: 7000 }
+            );
+        }
+        function saveRecords() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        // --- Render Functions ---
+        function renderTable() {
+            const tbody = document.querySelector('#attendanceTable tbody');
+            tbody.innerHTML = '';
+            attendanceRecords.forEach((rec, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${rec.name}</td>
+                    <td>${rec.location || ''}</td>
+                    <td>${formatDate(rec.checkIn)} ${formatTime(rec.checkIn)}</td>
+                    <td class="${getStatusClass(rec.status)}">${rec.status}</td>
+                    <td>${rec.checkOut ? formatDate(rec.checkOut) + ' ' + formatTime(rec.checkOut) : ''}</td>
+                    <td>${rec.workHours || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function renderAnalytics() {
+            const total = attendanceRecords.length;
+            const present = attendanceRecords.filter(r => r.status === 'Present').length;
+            const late = attendanceRecords.filter(r => r.status === 'Late').length;
+            const absent = attendanceRecords.filter(r => r.status === 'Absent').length;
+            const analytics = [
+                { label: 'Total Employees', value: total },
+                { label: 'Present', value: present },
+                { label: 'Late', value: late },
+                { label: 'Absent', value: absent },
+                { label: 'Present %', value: total ? ((present / total) * 100).toFixed(1) + '%' : '0%' },
+                { label: 'Late %', value: total ? ((late / total) * 100).toFixed(1) + '%' : '0%' },
+                { label: 'Absent %', value: total ? ((absent / total) * 100).toFixed(1) + '%' : '0%' },
+            ];
+            const analyticsDiv = document.getElementById('analytics');
+            analyticsDiv.innerHTML = '';
+            analytics.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'analytic-card';
+                card.innerHTML = `<h2>${a.value}</h2><p>${a.label}</p>`;
+                analyticsDiv.appendChild(card);
+            });
+        }
+
+        // --- Main Logic ---
+        function resetCheckInState() {
+            checkedInEmployee = null;
+            document.getElementById('employeeName').value = '';
+            document.getElementById('employeeName').disabled = false;
+            document.getElementById('checkInBtn').disabled = false;
+            document.getElementById('checkOutBtn').disabled = true;
+        }
+        function setCheckInState(name) {
+            checkedInEmployee = name;
+            document.getElementById('employeeName').value = name;
+            document.getElementById('employeeName').disabled = true;
+            document.getElementById('checkInBtn').disabled = true;
+            document.getElementById('checkOutBtn').disabled = false;
+        }
+        document.getElementById('checkInBtn').onclick = function() {
+            const name = document.getElementById('employeeName').value.trim();
+            if (!name) {
+                alert('Please enter your name.');
+                return;
+            }
+            // Prevent double check-in
+            if (attendanceRecords.some(r => r.name === name && !r.checkOut)) {
+                alert('You have already checked in. Please check out first.');
+                return;
+            }
+            getLocation(location => {
+                const now = new Date();
+                const status = getStatus(now);
+                const record = {
+                    name,
+                    location,
+                    checkIn: now,
+                    status,
+                    checkOut: null,
+                    workHours: ''
+                };
+                attendanceRecords.push(record);
+                saveRecords();
+                renderTable();
+                renderAnalytics();
+                setCheckInState(name);
+            });
+        };
+        document.getElementById('checkOutBtn').onclick = function() {
+            const name = checkedInEmployee;
+            if (!name) return;
+            const idx = attendanceRecords.findIndex(r => r.name === name && !r.checkOut);
+            if (idx === -1) {
+                alert('No active check-in found.');
+                return;
+            }
+            const now = new Date();
+            attendanceRecords[idx].checkOut = now;
+            attendanceRecords[idx].workHours = calcWorkHours(attendanceRecords[idx].checkIn, now);
+            saveRecords();
+            renderTable();
+            renderAnalytics();
+            resetCheckInState();
+        };
+
+        // --- Restore State on Load ---
+        function restoreCheckInState() {
+            const name = document.getElementById('employeeName').value.trim();
+            const active = attendanceRecords.find(r => !r.checkOut && r.name === name);
+            if (active) setCheckInState(active.name);
+            // else resetCheckInState();
+        }
+        // --- Initial Render ---
+        renderTable();
+        renderAnalytics();
+        resetCheckInState();
+
+        // --- Optional: Restore check-in state if page reloads ---
+        document.getElementById('employeeName').addEventListener('input', restoreCheckInState);
+    
