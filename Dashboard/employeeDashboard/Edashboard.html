@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Self Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; }
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+        }
+        h2 { text-align: center; color: #2d3a4b; }
+        .actions { display: flex; gap: 10px; margin-bottom: 18px; }
+        .actions input, .actions button {
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #bfc9d1;
+            outline: none;
+        }
+        .actions input { flex: 1; }
+        .actions button {
+            background: #2d8cff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .actions button:disabled { background: #bfc9d1; cursor: not-allowed; }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+        }
+        .info-table th, .info-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #e0e6ed;
+            text-align: left;
+        }
+        .info-table th { background: #f0f4fa; color: #2d3a4b; width: 40%; }
+        .status-present { color: #2ecc40; font-weight: bold; }
+        .status-late { color: #ff9800; font-weight: bold; }
+        .status-absent { color: #e74c3c; font-weight: bold; }
+        @media (max-width: 500px) {
+            .container { padding: 10px 2px; }
+            .actions { flex-direction: column; }
+            .actions input, .actions button { width: 100%; margin-bottom: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Employee Self Attendance</h2>
+        <div class="actions">
+            <input type="text" id="employeeName" placeholder="Enter your name" autocomplete="off">
+            <button id="checkInBtn">Check In</button>
+            <button id="checkOutBtn" disabled>Check Out</button>
+        </div>
+        <table class="info-table">
+            <tr>
+                <th>Name</th>
+                <td id="nameCell"></td>
+            </tr>
+            <tr>
+                <th>Check In Time</th>
+                <td id="checkInCell"></td>
+            </tr>
+            <tr>
+                <th>Location</th>
+                <td id="locationCell"></td>
+            </tr>
+            <tr>
+                <th>Check Out Time</th>
+                <td id="checkOutCell"></td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td id="statusCell"></td>
+            </tr>
+        </table>
+    </div>
+    <script src="EDJ.js"></script>
+</body>
+</html>

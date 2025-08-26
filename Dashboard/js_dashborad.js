@@ -1,4 +1,5 @@
 
+
         // --- Data Storage ---
         let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
         let checkedInEmployee = null;
@@ -23,6 +24,12 @@
             if (hour > 9 && hour <= 10) return 'Late';
             return 'Absent';
         }
+        window.addEventListener('storage', function(e) {
+    if (e.key === 'attendanceRecords') {
+        renderTable();
+        renderAnalytics();
+    }
+});
         function getStatusClass(status) {
             if (status === 'Present') return 'status-present';
             if (status === 'Late') return 'status-late';
@@ -53,6 +60,7 @@
         function saveRecords() {
             localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
         }
+        
 
         // --- Render Functions ---
         function renderTable() {
@@ -171,4 +179,6 @@
 
         // --- Optional: Restore check-in state if page reloads ---
         document.getElementById('employeeName').addEventListener('input', restoreCheckInState);
+
+       
     
