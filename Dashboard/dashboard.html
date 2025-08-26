@@ -1,261 +1,319 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Attendance Pro - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Employee Attendance Dashboard</title>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f8f9fc; }
-        .sidebar { height: 100vh; border-left: 1px solid #e3e6f0; }
-        .nav-link { color: #333; font-weight: bold; }
-        .nav-link:hover { color: #007bff; }
-        .card { border: none; border-radius: 10px; transition: transform 0.2s; }
-        .card:hover { transform: scale(1.02); }
-        .border-left-primary { border-right: 0.25rem solid #4e73df !important; }
-        .border-left-success { border-right: 0.25rem solid #1cc88a !important; }
-        .border-left-warning { border-right: 0.25rem solid #f6c23e !important; }
-        .border-left-danger { border-right: 0.25rem solid #e74a3b !important; }
-        .text-primary { color: #4e73df; }
-        .text-success { color: #1cc88a; }
-        .text-warning { color: #f6c23e; }
-        .text-danger { color: #e74a3b; }
-        .table th, .table td { text-align: center; }
-        .table tr:hover { background-color: #f0f0f0; }
-        .empty-message { text-align: center; color: #888; padding: 20px; }
-        @media (max-width: 768px) { .sidebar { position: absolute; width: 250px; z-index: 1000; } }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3a4b;
+            margin-bottom: 8px;
+        }
+        .analytics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .analytic-card {
+            background: #f0f4fa;
+            border-radius: 8px;
+            padding: 18px 28px;
+            min-width: 160px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .analytic-card h2 {
+            margin: 0;
+            font-size: 2rem;
+            color: #2d3a4b;
+        }
+        .analytic-card p {
+            margin: 6px 0 0 0;
+            color: #5c6b7a;
+            font-size: 1rem;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+        .actions input, .actions button {
+            padding: 10px 16px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #bfc9d1;
+            outline: none;
+        }
+        .actions input {
+            width: 180px;
+        }
+        .actions button {
+            background: #2d8cff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .actions button:disabled {
+            background: #bfc9d1;
+            cursor: not-allowed;
+        }
+        .actions button:hover:not(:disabled) {
+            background: #1769aa;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+        .attendance-table th, .attendance-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e0e6ed;
+            text-align: center;
+        }
+        .attendance-table th {
+            background: #f0f4fa;
+            color: #2d3a4b;
+        }
+        .status-present { color: #2ecc40; font-weight: bold; }
+        .status-late { color: #ff9800; font-weight: bold; }
+        .status-absent { color: #e74c3c; font-weight: bold; }
+        @media (max-width: 800px) {
+            .container { padding: 12px 4px; }
+            .analytics { gap: 8px; }
+            .analytic-card { min-width: 120px; padding: 10px 8px; }
+            .actions input { width: 120px; }
+            .attendance-table th, .attendance-table td { font-size: 0.95rem; padding: 6px 2px; }
+        }
+        @media (max-width: 600px) {
+            .analytics, .actions { flex-direction: column; align-items: stretch; }
+            .analytic-card { width: 100%; }
+            .actions input, .actions button { width: 100%; margin-bottom: 8px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="attendance.html">Attendance Records</a></li>
-                        <li class="nav-item"><a class="nav-link" href="employees.html">Employees</a></li>
-                        <li class="nav-item"><a class="nav-link" href="reports.html">Reports</a></li>
-                        <li class="nav-item"><a class="nav-link" href="settings.html">Settings</a></li>
-                        <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
-                    </ul>
-                </div>
-            </nav>
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Dashboard</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0 d-flex align-items-center">
-                        <select id="employeeSelect" class="form-select me-2" style="width: 200px;">
-                            <option value="">Select Employee</option>
-                        </select>
-                        <button id="checkInBtn" class="btn btn-primary" disabled>Check In</button>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Employees</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalEmployees">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Present Today</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="presentToday">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Absent Today</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="absentToday">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-danger shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Late Today</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="lateToday">0</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Recent Attendance Records</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="attendanceTable" width="100%" cellspacing="0">
-                                <thead>
-                                    <tr>
-                                        <th>Employee</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Location</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Current Employee Locations</h6>
-                    </div>
-                    <div class="card-body">
-                        <div id="map" style="height: 400px;"></div>
-                    </div>
-                </div>
-            </main>
+    <div class="container">
+        <h1>Employee Attendance Dashboard</h1>
+        <div class="analytics" id="analytics">
+            <!-- Analytics cards will be rendered here -->
+        </div>
+        <div class="actions">
+            <input type="text" id="employeeName" placeholder="Enter your name" />
+            <button id="checkInBtn">Check In</button>
+            <button id="checkOutBtn" disabled>Check Out</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="attendance-table" id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Check In</th>
+                        <th>Status</th>
+                        <th>Check Out</th>
+                        <th>Work Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Attendance records will be rendered here -->
+                </tbody>
+            </table>
         </div>
     </div>
-    <footer class="text-center py-3 bg-light">© 2025 Employee Attendance Pro</footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize employees
-            let employees = JSON.parse(localStorage.getItem('employees')) || [
-                { id: 1, name: "Ahmed Mohamed" }, { id: 2, name: "Fatima Ali" }, { id: 3, name: "Mohamed Hassan" },
-                { id: 4, name: "Sara Khaled" }, { id: 5, name: "Omar Ibrahim" }, { id: 6, name: "Nourhan Mostafa" },
-                { id: 7, name: "Youssef Ahmed" }, { id: 8, name: "Aya Mahmoud" }, { id: 9, name: "Khaled Omar" },
-                { id: 10, name: "Mona Adel" }, { id: 11, name: "Hassan Ezz" }, { id: 12, name: "Laila Sami" },
-                { id: 13, name: "Amr Tarek" }, { id: 14, name: "Rania Fathy" }, { id: 15, name: "Tamer Hosny" },
-                // ... (continuing up to 150 employees with realistic names)
-                { id: 150, name: "Zainab Yasser" }
+        // --- Data Storage ---
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
+        let checkedInEmployee = null;
+
+        // --- Utility Functions ---
+        function formatTime(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString();
+        }
+        function getStatus(checkInDate) {
+            const d = new Date(checkInDate);
+            const hour = d.getHours();
+            const min = d.getMinutes();
+            if (hour < 8) return 'Absent';
+            if (hour >= 8 && hour < 9) return 'Present';
+            if (hour >= 9 && hour < 10) return 'Late';
+            return 'Absent';
+        }
+        function getStatusClass(status) {
+            if (status === 'Present') return 'status-present';
+            if (status === 'Late') return 'status-late';
+            return 'status-absent';
+        }
+        function calcWorkHours(inTime, outTime) {
+            if (!inTime || !outTime) return '';
+            const diffMs = new Date(outTime) - new Date(inTime);
+            if (diffMs < 0) return '';
+            const hours = Math.floor(diffMs / 3600000);
+            const mins = Math.floor((diffMs % 3600000) / 60000);
+            return `${hours}h ${mins}m`;
+        }
+        function getLocation(callback) {
+            if (!navigator.geolocation) {
+                callback('Not Supported');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    callback(`Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`);
+                },
+                () => callback('Unavailable'),
+                { enableHighAccuracy: true, timeout: 7000 }
+            );
+        }
+        function saveRecords() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        // --- Render Functions ---
+        function renderTable() {
+            const tbody = document.querySelector('#attendanceTable tbody');
+            tbody.innerHTML = '';
+            attendanceRecords.forEach((rec, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${rec.name}</td>
+                    <td>${rec.location || ''}</td>
+                    <td>${formatDate(rec.checkIn)} ${formatTime(rec.checkIn)}</td>
+                    <td class="${getStatusClass(rec.status)}">${rec.status}</td>
+                    <td>${rec.checkOut ? formatDate(rec.checkOut) + ' ' + formatTime(rec.checkOut) : ''}</td>
+                    <td>${rec.workHours || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function renderAnalytics() {
+            const total = attendanceRecords.length;
+            const present = attendanceRecords.filter(r => r.status === 'Present').length;
+            const late = attendanceRecords.filter(r => r.status === 'Late').length;
+            const absent = attendanceRecords.filter(r => r.status === 'Absent').length;
+            const analytics = [
+                { label: 'Total Employees', value: total },
+                { label: 'Present', value: present },
+                { label: 'Late', value: late },
+                { label: 'Absent', value: absent },
+                { label: 'Present %', value: total ? ((present / total) * 100).toFixed(1) + '%' : '0%' },
+                { label: 'Late %', value: total ? ((late / total) * 100).toFixed(1) + '%' : '0%' },
+                { label: 'Absent %', value: total ? ((absent / total) * 100).toFixed(1) + '%' : '0%' },
             ];
-            if (!localStorage.getItem('employees')) {
-                localStorage.setItem('employees', JSON.stringify(employees));
-            }
-
-            // Initialize attendance data
-            let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
-            if (attendanceData.length === 0) {
-                const cities = [
-                    { name: "Cairo", lat: 30.0444, lon: 31.2357 },
-                    { name: "Alexandria", lat: 31.2001, lon: 29.9187 },
-                    { name: "Giza", lat: 30.0131, lon: 31.2089 },
-                    { name: "Luxor", lat: 25.6872, lon: 32.6396 },
-                    { name: "Aswan", lat: 24.0889, lon: 32.8998 }
-                ];
-                const startDate = new Date('2025-07-26');
-                const endDate = new Date('2025-08-25');
-                for (let i = 0; i < 30; i++) {
-                    const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                    employees.forEach(emp => {
-                        if (Math.random() < 0.9) { // 90% chance of attendance
-                            const hour = Math.floor(Math.random() * 4) + 7; // 7 AM to 10 AM
-                            const minute = Math.floor(Math.random() * 60);
-                            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} AM`;
-                            const status = hour <= 9 ? 'Present' : 'Late';
-                            const city = cities[Math.floor(Math.random() * cities.length)];
-                            const lat = (city.lat + (Math.random() - 0.5) * 0.01).toFixed(4);
-                            const lon = (city.lon + (Math.random() - 0.5) * 0.01).toFixed(4);
-                            attendanceData.push({
-                                employeeId: emp.id,
-                                date,
-                                time,
-                                location: `${city.name}, Egypt (${lat}, ${lon})`,
-                                status
-                            });
-                        }
-                    });
-                }
-                localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-            }
-
-            const tableBody = document.querySelector('#attendanceTable tbody');
-            const employeeSelect = document.getElementById('employeeSelect');
-            const checkInBtn = document.getElementById('checkInBtn');
-            const map = L.map('map').setView([30.0444, 31.2357], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-
-            function updateEmployeeSelect() {
-                employeeSelect.innerHTML = '<option value="">Select Employee</option>';
-                employees.forEach(emp => {
-                    const option = document.createElement('option');
-                    option.value = emp.id;
-                    option.textContent = `${emp.name} (ID: ${emp.id})`;
-                    employeeSelect.appendChild(option);
-                });
-                checkInBtn.disabled = !employeeSelect.value;
-            }
-
-            updateEmployeeSelect();
-
-            employeeSelect.addEventListener('change', () => {
-                checkInBtn.disabled = !employeeSelect.value;
+            const analyticsDiv = document.getElementById('analytics');
+            analyticsDiv.innerHTML = '';
+            analytics.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'analytic-card';
+                card.innerHTML = `<h2>${a.value}</h2><p>${a.label}</p>`;
+                analyticsDiv.appendChild(card);
             });
+        }
 
-            function renderData() {
-                tableBody.innerHTML = '';
-                if (attendanceData.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="empty-message">No attendance records</td></tr>';
-                } else {
-                    attendanceData.slice(0, 5).forEach(record => {
-                        const emp = employees.find(e => e.id === record.employeeId);
-                        if (emp) {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `<td>${emp.name}</td><td>${record.date}</td><td>${record.time}</td><td>${record.location}</td><td>${record.status}</td>`;
-                            tableBody.appendChild(row);
-                        }
-                    });
-                }
-                map.eachLayer(layer => { if (layer instanceof L.Marker) map.removeLayer(layer); });
-                attendanceData.forEach(record => {
-                    const emp = employees.find(e => e.id === record.employeeId);
-                    if (emp) {
-                        const coords = record.location.match(/\((\d+\.\d+), (\d+\.\d+)\)/);
-                        if (coords) L.marker([parseFloat(coords[1]), parseFloat(coords[2])]).addTo(map).bindPopup(`${emp.name}: ${record.date} - ${record.time}`);
-                    }
-                });
-                updateStats();
+        // --- Main Logic ---
+        function resetCheckInState() {
+            checkedInEmployee = null;
+            document.getElementById('employeeName').value = '';
+            document.getElementById('employeeName').disabled = false;
+            document.getElementById('checkInBtn').disabled = false;
+            document.getElementById('checkOutBtn').disabled = true;
+        }
+        function setCheckInState(name) {
+            checkedInEmployee = name;
+            document.getElementById('employeeName').value = name;
+            document.getElementById('employeeName').disabled = true;
+            document.getElementById('checkInBtn').disabled = true;
+            document.getElementById('checkOutBtn').disabled = false;
+        }
+        document.getElementById('checkInBtn').onclick = function() {
+            const name = document.getElementById('employeeName').value.trim();
+            if (!name) {
+                alert('Please enter your name.');
+                return;
             }
-
-            function updateStats() {
-                const today = new Date().toISOString().split('T')[0];
-                const todayRecords = attendanceData.filter(r => r.date === today);
-                const presentIds = new Set(todayRecords.filter(r => r.status === 'Present').map(r => r.employeeId));
-                const lateIds = new Set(todayRecords.filter(r => r.status === 'Late').map(r => r.employeeId));
-
-                document.getElementById('totalEmployees').textContent = employees.length;
-                document.getElementById('presentToday').textContent = presentIds.size;
-                document.getElementById('absentToday').textContent = employees.length - new Set(todayRecords.map(r => r.employeeId)).size;
-                document.getElementById('lateToday').textContent = lateIds.size;
+            // Prevent double check-in
+            if (attendanceRecords.some(r => r.name === name && !r.checkOut)) {
+                alert('You have already checked in. Please check out first.');
+                return;
             }
-
-            renderData();
-
-            checkInBtn.addEventListener('click', function() {
-                if (!employeeSelect.value) return alert('Select an employee first!');
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(position => {
-                        const lat = position.coords.latitude.toFixed(4);
-                        const lon = position.coords.longitude.toFixed(4);
-                        const now = new Date();
-                        const date = now.toISOString().split('T')[0];
-                        const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                        const status = time.split(' ')[1] === 'AM' && parseInt(time.split(':')[0]) <= 9 ? 'Present' : 'Late';
-                        const employeeId = parseInt(employeeSelect.value);
-                        attendanceData.unshift({ employeeId, date, time, location: `Your location, Egypt (${lat}, ${lon})`, status });
-                        localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-                        renderData();
-                        map.setView([lat, lon], 13);
-                        const empName = employees.find(e => e.id === employeeId).name;
-                        alert(`Check-in recorded for ${empName} at: (${lat}, ${lon}) - Status: ${status}`);
-                    }, error => alert('Error: ' + error.message));
-                } else alert('Browser does not support geolocation.');
+            getLocation(location => {
+                const now = new Date();
+                const status = getStatus(now);
+                const record = {
+                    name,
+                    location,
+                    checkIn: now,
+                    status,
+                    checkOut: null,
+                    workHours: ''
+                };
+                attendanceRecords.push(record);
+                saveRecords();
+                renderTable();
+                renderAnalytics();
+                setCheckInState(name);
             });
-        });
+        };
+        document.getElementById('checkOutBtn').onclick = function() {
+            const name = checkedInEmployee;
+            if (!name) return;
+            const idx = attendanceRecords.findIndex(r => r.name === name && !r.checkOut);
+            if (idx === -1) {
+                alert('No active check-in found.');
+                return;
+            }
+            const now = new Date();
+            attendanceRecords[idx].checkOut = now;
+            attendanceRecords[idx].workHours = calcWorkHours(attendanceRecords[idx].checkIn, now);
+            saveRecords();
+            renderTable();
+            renderAnalytics();
+            resetCheckInState();
+        };
+
+        // --- Restore State on Load ---
+        function restoreCheckInState() {
+            const name = document.getElementById('employeeName').value.trim();
+            const active = attendanceRecords.find(r => !r.checkOut && r.name === name);
+            if (active) setCheckInState(active.name);
+            // else resetCheckInState();
+        }
+        // --- Initial Render ---
+        renderTable();
+        renderAnalytics();
+        resetCheckInState();
+
+        // --- Optional: Restore check-in state if page reloads ---
+        document.getElementById('employeeName').addEventListener('input', restoreCheckInState);
     </script>
 </body>
 </html>
